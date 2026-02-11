@@ -33,7 +33,8 @@ namespace EmployeeManagementAPI.Data
                                 EmployeeID = reader.GetInt32(0),
                                 Name = reader.GetString(1),
                                 Username = reader.GetString(2),
-                                Role = reader.GetString(3)
+                                Role = reader.GetString(3),
+                                Status = reader.GetString(4)
                             };
                         }
                     }

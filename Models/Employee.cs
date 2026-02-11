@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace EmployeeManagementAPI.Models
 {
@@ -64,5 +63,7 @@ namespace EmployeeManagementAPI.Models
         public string Username { get; set; }
 
         public string Role { get; set; }
+
+        public string Status { get; set; }
     }
 }
