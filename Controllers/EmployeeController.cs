@@ -59,15 +59,51 @@ namespace EmployeeManagementAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEmployee(int id, [FromBody] Employee employee)
+        public async Task<IActionResult> UpdateEmployee(int id, [FromBody] UpdateEmployeeRequest request)
         {
-            employee.EmployeeID = id;
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Map the Request DTO to a temporary Employee object for the Repository
+            var employee = new Employee
+            {
+                EmployeeID = id,
+                Name = request.Name,
+                Designation = request.Designation,
+                Address = request.Address,
+                Department = request.Department,
+                JoiningDate = request.JoiningDate,
+                Skillset = request.Skillset,
+                ModifiedBy = request.ModifiedBy
+            };
+
             var success = await _repository.UpdateEmployee(employee);
+
             if (!success)
             {
                 return NotFound();
             }
+
             return Ok(new { message = "Employee updated successfully" });
+        }
+
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> UpdateEmployeeStatus(int id, [FromBody] UpdateEmployeeStatusRequest request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.Status))
+                return BadRequest(new { message = "Status is required" });
+
+            var status = request.Status.Trim();
+            if (status != "Active" && status != "Inactive")
+                return BadRequest(new { message = "Invalid status. Allowed values: Active, Inactive." });
+
+            var success = await _repository.UpdateEmployeeStatus(id, status, request.ModifiedBy);
+            if (!success)
+                return NotFound();
+
+            return Ok(new { message = "Status updated successfully" });
         }
     }
 }

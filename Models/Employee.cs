@@ -66,4 +66,32 @@ namespace EmployeeManagementAPI.Models
 
         public string Status { get; set; }
     }
+    public class UpdateEmployeeStatusRequest
+    {
+        public string Status { get; set; } = string.Empty;
+        public string ModifiedBy { get; set; } = string.Empty;
+    }
+    public class UpdateEmployeeRequest
+    {
+        [Required, StringLength(100)]
+        public string Name { get; set; }
+
+        [StringLength(100)]
+        public string? Designation { get; set; }
+
+        [StringLength(200)]
+        public string? Address { get; set; }
+
+        [StringLength(100)]
+        public string? Department { get; set; }
+
+        public DateTime? JoiningDate { get; set; }
+
+        [StringLength(200)]
+        public string? Skillset { get; set; }
+
+        [StringLength(50)]
+        public string? ModifiedBy { get; set; }
+    }
+
 }

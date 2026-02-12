@@ -124,7 +124,6 @@ namespace EmployeeManagementAPI.Data
                     cmd.Parameters.AddWithValue("@Department", employee.Department ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@JoiningDate", employee.JoiningDate ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Skillset", employee.Skillset ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Status", employee.Status ?? "Active");  // ADD THIS LINE
                     cmd.Parameters.AddWithValue("@ModifiedBy", employee.ModifiedBy ?? "System");
 
                     await conn.OpenAsync();
@@ -133,7 +132,32 @@ namespace EmployeeManagementAPI.Data
                 }
             }
         }
+        public async Task<bool> UpdateEmployeeStatus(int employeeId, string status, string modifiedBy)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("sp_UpdateEmployeeStatus", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@EmployeeID", employeeId);
+                    cmd.Parameters.AddWithValue("@Status", status);
+                    cmd.Parameters.AddWithValue("@ModifiedBy", string.IsNullOrWhiteSpace(modifiedBy) ? "System" : modifiedBy);
 
+                    await conn.OpenAsync();
+                    // sp_UpdateEmployeeStatus returns a single-row result with RowsAffected
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            var rowsAffected = reader.GetInt32(0);
+                            return rowsAffected > 0;
+                        }
+                    }
+
+                    return false;
+                }
+            }
+        }
 
         private Employee MapEmployeeFromReader(SqlDataReader reader)
         {
