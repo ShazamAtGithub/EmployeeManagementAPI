@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using EmployeeManagementAPI.Data;
 using EmployeeManagementAPI.Models;
-using EmployeeManagementAPI.Services; // 1. Added this namespace
+using EmployeeManagementAPI.Services;
 
 namespace EmployeeManagementAPI.Controllers
 {
@@ -10,9 +10,8 @@ namespace EmployeeManagementAPI.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly EmployeeRepository _repository;
-        private readonly IPasswordHasher _passwordHasher; // 2. Added the Hasher field
+        private readonly IPasswordHasher _passwordHasher;
 
-        // 3. Inject the Hasher in the constructor
         public EmployeeController(EmployeeRepository repository, IPasswordHasher passwordHasher)
         {
             _repository = repository;
@@ -22,8 +21,6 @@ namespace EmployeeManagementAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // STEP 1: Get the user by Username only
-            // (Make sure you added 'GetEmployeeByUsername' to your Repository as discussed!)
             var employee = await _repository.GetEmployeeByUsername(request.Username);
 
             if (employee == null)
@@ -31,20 +28,17 @@ namespace EmployeeManagementAPI.Controllers
                 return Unauthorized(new { message = "Invalid credentials" });
             }
 
-            // STEP 2: Verify the password using the Service
-            // We compare the Plain Text input vs the Hashed Password from DB
+            // Verify plain text input against hashed password from DB
             if (!_passwordHasher.Verify(employee.Password, request.Password))
             {
                 return Unauthorized(new { message = "Invalid credentials" });
             }
 
-            // STEP 3: Check if the user is Active
             if (employee.Status == "Inactive")
             {
                 return Unauthorized(new { message = "Account is inactive. Please contact Admin." });
             }
 
-            // STEP 4: Return success response
             return Ok(new LoginResponse
             {
                 EmployeeID = employee.EmployeeID,
@@ -60,10 +54,9 @@ namespace EmployeeManagementAPI.Controllers
         {
             try
             {
-                // STEP 1: Hash the password before saving
+                // Hash password before storage
                 employee.Password = _passwordHasher.Hash(employee.Password);
 
-                // STEP 2: Save to DB
                 var employeeId = await _repository.RegisterEmployee(employee);
                 return Ok(new { employeeId, message = "Registration successful" });
             }
@@ -84,43 +77,33 @@ namespace EmployeeManagementAPI.Controllers
             return Ok(employee);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllEmployees()
-        {
-            var employees = await _repository.GetAllEmployees();
-            return Ok(employees);
-        }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEmployee(int id, [FromBody] UpdateEmployeeRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+[HttpPut("{id}")]
+public async Task<IActionResult> UpdateEmployee(int id, [FromBody] UpdateEmployeeRequest request)
+{
+    if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            // Map the Request DTO to a temporary Employee object
-            var employee = new Employee
-            {
-                EmployeeID = id,
-                Name = request.Name,
-                Designation = request.Designation,
-                Address = request.Address,
-                Department = request.Department,
-                JoiningDate = request.JoiningDate,
-                Skillset = request.Skillset,
-                ModifiedBy = request.ModifiedBy
-            };
+    var targetEmployee = await _repository.GetEmployeeById(id);
+    if (targetEmployee == null || targetEmployee.Role == "Admin") return NotFound();
+    if (targetEmployee.Username != request.ModifiedBy)
+    {
+        return NotFound(); 
+    }
+    // Map and Update
+    var employee = new Employee
+    {
+        EmployeeID = id,
+        Name = request.Name,
+        Designation = request.Designation,
+        Address = request.Address,
+        Department = request.Department,
+        JoiningDate = request.JoiningDate,
+        Skillset = request.Skillset,
+        ModifiedBy = request.ModifiedBy
+    };
 
-            var success = await _repository.UpdateEmployee(employee);
-
-            if (!success)
-            {
-                return NotFound();
-            }
-
-            return Ok(new { message = "Employee updated successfully" });
-        }
-
+    var success = await _repository.UpdateEmployee(employee);
+    return success ? Ok(new { message = "Profile updated successfully" }) : StatusCode(500);
+}
     }
 }
