@@ -13,28 +13,29 @@ namespace EmployeeManagementAPI.Data
             _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        public async Task<LoginResponse?> Login(string username, string password)
+        // Fetches the user and hashed password
+        public async Task<Employee?> GetEmployeeByUsername(string username)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
-                using (SqlCommand cmd = new SqlCommand("sp_LoginEmployee", conn))
+                using (SqlCommand cmd = new SqlCommand("sp_GetEmployeeByUsername", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Username", username);
-                    cmd.Parameters.AddWithValue("@Password", password);
 
                     await conn.OpenAsync();
                     using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                     {
                         if (await reader.ReadAsync())
                         {
-                            return new LoginResponse
+                            return new Employee
                             {
-                                EmployeeID = reader.GetInt32(0),
-                                Name = reader.GetString(1),
-                                Username = reader.GetString(2),
-                                Role = reader.GetString(3),
-                                Status = reader.GetString(4)
+                                EmployeeID = reader.GetInt32(reader.GetOrdinal("EmployeeID")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                Username = reader.GetString(reader.GetOrdinal("Username")),
+                                Password = reader.GetString(reader.GetOrdinal("Password")), 
+                                Role = reader.GetString(reader.GetOrdinal("Role")),
+                                Status = reader.GetString(reader.GetOrdinal("Status"))
                             };
                         }
                     }
@@ -57,6 +58,7 @@ namespace EmployeeManagementAPI.Data
                     cmd.Parameters.AddWithValue("@JoiningDate", employee.JoiningDate ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Skillset", employee.Skillset ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Username", employee.Username);
+                    // Receives the HASHED password from the Controller
                     cmd.Parameters.AddWithValue("@Password", employee.Password);
                     cmd.Parameters.AddWithValue("@CreatedBy", employee.CreatedBy ?? "Self");
 
@@ -132,6 +134,7 @@ namespace EmployeeManagementAPI.Data
                 }
             }
         }
+
         public async Task<bool> UpdateEmployeeStatus(int employeeId, string status, string modifiedBy)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -144,7 +147,6 @@ namespace EmployeeManagementAPI.Data
                     cmd.Parameters.AddWithValue("@ModifiedBy", string.IsNullOrWhiteSpace(modifiedBy) ? "System" : modifiedBy);
 
                     await conn.OpenAsync();
-                    // sp_UpdateEmployeeStatus returns a single-row result with RowsAffected
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         if (await reader.ReadAsync())
@@ -153,7 +155,6 @@ namespace EmployeeManagementAPI.Data
                             return rowsAffected > 0;
                         }
                     }
-
                     return false;
                 }
             }

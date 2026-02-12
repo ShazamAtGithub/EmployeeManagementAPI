@@ -1,4 +1,5 @@
 using EmployeeManagementAPI.Data;
+using EmployeeManagementAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<EmployeeRepository>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 // Add CORS
 builder.Services.AddCors(options =>

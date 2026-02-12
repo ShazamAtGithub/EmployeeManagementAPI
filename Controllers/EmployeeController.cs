@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using EmployeeManagementAPI.Data;
 using EmployeeManagementAPI.Models;
+using EmployeeManagementAPI.Services; // 1. Added this namespace
 
 namespace EmployeeManagementAPI.Controllers
 {
@@ -9,21 +10,49 @@ namespace EmployeeManagementAPI.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly EmployeeRepository _repository;
+        private readonly IPasswordHasher _passwordHasher; // 2. Added the Hasher field
 
-        public EmployeeController(EmployeeRepository repository)
+        // 3. Inject the Hasher in the constructor
+        public EmployeeController(EmployeeRepository repository, IPasswordHasher passwordHasher)
         {
             _repository = repository;
+            _passwordHasher = passwordHasher;
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var result = await _repository.Login(request.Username, request.Password);
-            if (result == null)
+            // STEP 1: Get the user by Username only
+            // (Make sure you added 'GetEmployeeByUsername' to your Repository as discussed!)
+            var employee = await _repository.GetEmployeeByUsername(request.Username);
+
+            if (employee == null)
             {
                 return Unauthorized(new { message = "Invalid credentials" });
             }
-            return Ok(result);
+
+            // STEP 2: Verify the password using the Service
+            // We compare the Plain Text input vs the Hashed Password from DB
+            if (!_passwordHasher.Verify(employee.Password, request.Password))
+            {
+                return Unauthorized(new { message = "Invalid credentials" });
+            }
+
+            // STEP 3: Check if the user is Active
+            if (employee.Status == "Inactive")
+            {
+                return Unauthorized(new { message = "Account is inactive. Please contact Admin." });
+            }
+
+            // STEP 4: Return success response
+            return Ok(new LoginResponse
+            {
+                EmployeeID = employee.EmployeeID,
+                Name = employee.Name,
+                Username = employee.Username,
+                Role = employee.Role,
+                Status = employee.Status
+            });
         }
 
         [HttpPost("register")]
@@ -31,6 +60,10 @@ namespace EmployeeManagementAPI.Controllers
         {
             try
             {
+                // STEP 1: Hash the password before saving
+                employee.Password = _passwordHasher.Hash(employee.Password);
+
+                // STEP 2: Save to DB
                 var employeeId = await _repository.RegisterEmployee(employee);
                 return Ok(new { employeeId, message = "Registration successful" });
             }
@@ -66,7 +99,7 @@ namespace EmployeeManagementAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Map the Request DTO to a temporary Employee object for the Repository
+            // Map the Request DTO to a temporary Employee object
             var employee = new Employee
             {
                 EmployeeID = id,
