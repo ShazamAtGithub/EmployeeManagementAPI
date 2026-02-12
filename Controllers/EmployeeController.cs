@@ -122,21 +122,5 @@ namespace EmployeeManagementAPI.Controllers
             return Ok(new { message = "Employee updated successfully" });
         }
 
-        [HttpPut("{id}/status")]
-        public async Task<IActionResult> UpdateEmployeeStatus(int id, [FromBody] UpdateEmployeeStatusRequest request)
-        {
-            if (request == null || string.IsNullOrWhiteSpace(request.Status))
-                return BadRequest(new { message = "Status is required" });
-
-            var status = request.Status.Trim();
-            if (status != "Active" && status != "Inactive")
-                return BadRequest(new { message = "Invalid status. Allowed values: Active, Inactive." });
-
-            var success = await _repository.UpdateEmployeeStatus(id, status, request.ModifiedBy);
-            if (!success)
-                return NotFound();
-
-            return Ok(new { message = "Status updated successfully" });
-        }
     }
 }
