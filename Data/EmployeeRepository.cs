@@ -61,6 +61,9 @@ namespace EmployeeManagementAPI.Data
                     // Receives the HASHED password from the Controller
                     cmd.Parameters.AddWithValue("@Password", employee.Password);
                     cmd.Parameters.AddWithValue("@CreatedBy", employee.CreatedBy ?? "Self");
+                    SqlParameter imageParam = new SqlParameter("@ProfileImage", SqlDbType.VarBinary, -1);
+                    imageParam.Value = employee.ProfileImage ?? (object)DBNull.Value;
+                    cmd.Parameters.Add(imageParam);
 
                     await conn.OpenAsync();
                     var result = await cmd.ExecuteScalarAsync();
@@ -127,6 +130,25 @@ namespace EmployeeManagementAPI.Data
                     cmd.Parameters.AddWithValue("@JoiningDate", employee.JoiningDate ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Skillset", employee.Skillset ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@ModifiedBy", employee.ModifiedBy ?? "System");
+                    await conn.OpenAsync();
+                    int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+        public async Task<bool> UpdateProfileImage(int employeeId, byte[]? imageBytes, string? modifiedBy)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("sp_UpdateProfileImage", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@EmployeeID", employeeId);
+                    cmd.Parameters.AddWithValue("@ModifiedBy", string.IsNullOrWhiteSpace(modifiedBy) ? "System" : modifiedBy);
+
+                    SqlParameter imageParam = new SqlParameter("@ProfileImage", SqlDbType.VarBinary, -1);
+                    imageParam.Value = imageBytes ?? (object)DBNull.Value;
+                    cmd.Parameters.Add(imageParam);
 
                     await conn.OpenAsync();
                     int rowsAffected = await cmd.ExecuteNonQueryAsync();
@@ -135,6 +157,26 @@ namespace EmployeeManagementAPI.Data
             }
         }
 
+        public async Task<byte[]?> GetProfileImage(int employeeId)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("sp_GetProfileImage", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@EmployeeID", employeeId);
+
+                    await conn.OpenAsync();
+                    var result = await cmd.ExecuteScalarAsync();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        return (byte[])result;
+                    }
+                }
+            }
+            return null;
+        }
         public async Task<bool> UpdateEmployeeStatus(int employeeId, string status, string modifiedBy)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -162,7 +204,7 @@ namespace EmployeeManagementAPI.Data
 
         private Employee MapEmployeeFromReader(SqlDataReader reader)
         {
-            return new Employee
+            var employee = new Employee
             {
                 EmployeeID = reader.GetInt32(reader.GetOrdinal("EmployeeID")),
                 Name = reader.GetString(reader.GetOrdinal("Name")),
@@ -180,6 +222,27 @@ namespace EmployeeManagementAPI.Data
                 CreatedAt = reader.IsDBNull(reader.GetOrdinal("CreatedAt")) ? null : reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
                 ModifiedAt = reader.IsDBNull(reader.GetOrdinal("ModifiedAt")) ? null : reader.GetDateTime(reader.GetOrdinal("ModifiedAt"))
             };
+
+            // Safely map the Profile Image ONLY if the query returned it
+            if (HasColumn(reader, "ProfileImage") && !reader.IsDBNull(reader.GetOrdinal("ProfileImage")))
+            {
+                employee.ProfileImage = (byte[])reader["ProfileImage"];
+            }
+
+            return employee;
+        }
+
+        // Helper method to safely check if a column exists in the current result set
+        private bool HasColumn(SqlDataReader reader, string columnName)
+        {
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                if (reader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿USE [EmployeeManagementDB]
 GO
-/****** Object:  Table [dbo].[Employees]    Script Date: 13-02-2026 11.23.20 AM ******/
+/****** Object:  Table [dbo].[Employees]    Script Date: 14-02-2026 8.14.53 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -21,23 +21,24 @@ CREATE TABLE [dbo].[Employees](
 	[ModifiedBy] [nvarchar](100) NULL,
 	[CreatedAt] [datetime] NULL,
 	[ModifiedAt] [datetime] NULL,
+	[ProfileImage] [varbinary](max) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[EmployeeID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 SET IDENTITY_INSERT [dbo].[Employees] ON 
 GO
-INSERT [dbo].[Employees] ([EmployeeID], [Name], [Designation], [Address], [Department], [JoiningDate], [Skillset], [Username], [Password], [Status], [Role], [CreatedBy], [ModifiedBy], [CreatedAt], [ModifiedAt]) VALUES (1, N'admin', N'', N'', N'', NULL, N'Administration', N'admin', N'$2a$11$.IV7msbKf2MHpAiwJz/MDukivh0Mf.1BWLEd.abJI0.EROTg3HwOW', N'Active', N'Admin', N'Self', N'admin', CAST(N'2026-02-12T17:40:54.443' AS DateTime), CAST(N'2026-02-12T19:32:11.073' AS DateTime))
+INSERT [dbo].[Employees] ([EmployeeID], [Name], [Designation], [Address], [Department], [JoiningDate], [Skillset], [Username], [Password], [Status], [Role], [CreatedBy], [ModifiedBy], [CreatedAt], [ModifiedAt], [ProfileImage]) VALUES (1, N'admin', N'', N'', N'', NULL, N'Administration', N'admin', N'$2a$11$.IV7msbKf2MHpAiwJz/MDukivh0Mf.1BWLEd.abJI0.EROTg3HwOW', N'Active', N'Admin', N'Self', N'admin', CAST(N'2026-02-12T17:40:54.443' AS DateTime), CAST(N'2026-02-12T19:32:11.073' AS DateTime), NULL)
 GO
-INSERT [dbo].[Employees] ([EmployeeID], [Name], [Designation], [Address], [Department], [JoiningDate], [Skillset], [Username], [Password], [Status], [Role], [CreatedBy], [ModifiedBy], [CreatedAt], [ModifiedAt]) VALUES (2, N'user1', N'CEO', N'', N'Executive', NULL, N'Business Analytics', N'user1', N'$2a$11$55O7kk6exMyJaU.LI1hjrer1OrW7Aw0cmQ4Va7Olu11aFYrRUx.Di', N'Active', N'Employee', N'Self', N'admin', CAST(N'2026-02-12T18:45:50.993' AS DateTime), CAST(N'2026-02-13T11:21:23.530' AS DateTime))
+INSERT [dbo].[Employees] ([EmployeeID], [Name], [Designation], [Address], [Department], [JoiningDate], [Skillset], [Username], [Password], [Status], [Role], [CreatedBy], [ModifiedBy], [CreatedAt], [ModifiedAt], [ProfileImage]) VALUES (2, N'user1', N'CEO', N'', N'Sales', NULL, N'Business Management', N'user1', N'$2a$11$55O7kk6exMyJaU.LI1hjrer1OrW7Aw0cmQ4Va7Olu11aFYrRUx.Di', N'Active', N'Employee', N'Self', N'user1', CAST(N'2026-02-12T18:45:50.993' AS DateTime), CAST(N'2026-02-13T23:40:32.250' AS DateTime), NULL)
 GO
 SET IDENTITY_INSERT [dbo].[Employees] OFF
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UQ__Employee__536C85E4735B46B6]    Script Date: 13-02-2026 11.23.20 AM ******/
+/****** Object:  Index [UQ__Employee__536C85E4735B46B6]    Script Date: 14-02-2026 8.14.53 PM ******/
 ALTER TABLE [dbo].[Employees] ADD UNIQUE NONCLUSTERED 
 (
 	[Username] ASC
@@ -51,7 +52,7 @@ ALTER TABLE [dbo].[Employees] ADD  DEFAULT (getdate()) FOR [CreatedAt]
 GO
 ALTER TABLE [dbo].[Employees] ADD  DEFAULT (getdate()) FOR [ModifiedAt]
 GO
-/****** Object:  StoredProcedure [dbo].[sp_GetAllEmployees]    Script Date: 13-02-2026 11.23.20 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_GetAllEmployees]    Script Date: 14-02-2026 8.14.53 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -65,7 +66,7 @@ BEGIN
 END
 
 GO
-/****** Object:  StoredProcedure [dbo].[sp_GetEmployeeById]    Script Date: 13-02-2026 11.23.20 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_GetEmployeeById]    Script Date: 14-02-2026 8.14.53 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -80,7 +81,7 @@ BEGIN
 END
 
 GO
-/****** Object:  StoredProcedure [dbo].[sp_GetEmployeeByUsername]    Script Date: 13-02-2026 11.23.20 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_GetEmployeeByUsername]    Script Date: 14-02-2026 8.14.53 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -95,14 +96,30 @@ BEGIN
         EmployeeID, 
         Name, 
         Username, 
-        Password, 
+        Password, -- <--- Critical: We need this to verify the hash in C#
         Role, 
         Status 
     FROM Employees 
     WHERE Username = @Username;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[sp_LoginEmployee]    Script Date: 13-02-2026 11.23.20 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_GetProfileImage]    Script Date: 14-02-2026 8.14.53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[sp_GetProfileImage]
+    @EmployeeID INT
+AS
+BEGIN
+    SELECT ProfileImage 
+    FROM Employees 
+    WHERE EmployeeID = @EmployeeID;
+END
+
+GO
+/****** Object:  StoredProcedure [dbo].[sp_LoginEmployee]    Script Date: 14-02-2026 8.14.53 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -117,7 +134,7 @@ BEGIN
     WHERE Username = @Username AND Password = @Password;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[sp_RegisterEmployee]    Script Date: 13-02-2026 11.23.20 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_RegisterEmployee]    Script Date: 14-02-2026 8.14.53 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -130,21 +147,21 @@ CREATE PROCEDURE [dbo].[sp_RegisterEmployee]
     @Department NVARCHAR(100),
     @JoiningDate DATE,
     @Skillset NVARCHAR(500),
+    @ProfileImage VARBINARY(MAX),
     @Username NVARCHAR(50),
     @Password NVARCHAR(255),
     @CreatedBy NVARCHAR(100)
 AS
 BEGIN
     INSERT INTO Employees (Name, Designation, Address, Department, JoiningDate, 
-                          Skillset, Username, Password, CreatedBy, Role, Status)
+                          Skillset, ProfileImage, Username, Password, CreatedBy, Role, Status)
     VALUES (@Name, @Designation, @Address, @Department, @JoiningDate, 
-            @Skillset, @Username, @Password, @CreatedBy, 'Employee', 'Active');
+            @Skillset, @ProfileImage, @Username, @Password, @CreatedBy, 'Employee', 'Active');
     
     SELECT SCOPE_IDENTITY() AS EmployeeID;
 END
-
 GO
-/****** Object:  StoredProcedure [dbo].[sp_UpdateEmployee]    Script Date: 13-02-2026 11.23.20 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_UpdateEmployee]    Script Date: 14-02-2026 8.14.53 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -174,7 +191,7 @@ BEGIN
 END
 
 GO
-/****** Object:  StoredProcedure [dbo].[sp_UpdateEmployeeStatus]    Script Date: 13-02-2026 11.23.20 AM ******/
+/****** Object:  StoredProcedure [dbo].[sp_UpdateEmployeeStatus]    Script Date: 14-02-2026 8.14.53 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -194,6 +211,25 @@ BEGIN
     WHERE EmployeeID = @EmployeeID;
 
     SELECT @@ROWCOUNT AS RowsAffected;
+END
+
+GO
+/****** Object:  StoredProcedure [dbo].[sp_UpdateProfileImage]    Script Date: 14-02-2026 8.14.53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[sp_UpdateProfileImage]
+    @EmployeeID INT,
+    @ProfileImage VARBINARY(MAX),
+    @ModifiedBy NVARCHAR(100)
+AS
+BEGIN
+    UPDATE Employees
+    SET ProfileImage = @ProfileImage,
+        ModifiedBy = @ModifiedBy,
+        ModifiedAt = GETDATE()
+    WHERE EmployeeID = @EmployeeID;
 END
 
 GO

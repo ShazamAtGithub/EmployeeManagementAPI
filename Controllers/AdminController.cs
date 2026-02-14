@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using EmployeeManagementAPI.Data;
+﻿using EmployeeManagementAPI.Data;
+using EmployeeManagementAPI.DTOs;
 using EmployeeManagementAPI.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagementAPI.Controllers
 {
@@ -25,20 +26,20 @@ namespace EmployeeManagementAPI.Controllers
         [HttpPut("employees/{id}/status")]
         public async Task<IActionResult> UpdateEmployeeStatus(int id, [FromBody] UpdateEmployeeStatusRequest request)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.Status))
-                return BadRequest(new { message = "Status is required" });
-
-            var status = request.Status.Trim();
-            if (status != "Active" && status != "Inactive")
-                return BadRequest(new { message = "Invalid status. Allowed values: Active, Inactive." });
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var targetEmployee = await _repository.GetEmployeeById(id);
+
+            if (targetEmployee == null)
+            {
+                return NotFound(new { message = "Employee not found." });
+            }
 
             if (targetEmployee.Role == "Admin")
             {
                 return BadRequest(new { message = "Action denied." });
             }
-            var success = await _repository.UpdateEmployeeStatus(id, status, request.ModifiedBy);
+            var success = await _repository.UpdateEmployeeStatus(id, request.Status.Trim(), request.ModifiedBy);
 
             if (!success)
                 return NotFound();
@@ -58,7 +59,8 @@ namespace EmployeeManagementAPI.Controllers
                 return BadRequest(new { message = "Action denied" });
             }
 
-            // Map and Update
+            // new Employee instance 
+            // only map fields that the admin is allowed to change
             var employee = new Employee
             {
                 EmployeeID = id,
