@@ -97,4 +97,18 @@ namespace EmployeeManagementAPI.DTOs
         [StringLength(100)]
         public string? ModifiedBy { get; set; }
     }
+
+    // Lightweight DTO returned to admin dashboard (limited fields only)
+    public sealed class EmployeeSummaryDto
+    {
+        public int EmployeeID { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Designation { get; set; }
+        public string? Address { get; set; }
+        public string? Department { get; set; }
+        public DateTime? JoiningDate { get; set; }
+        public string? Skillset { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+    }
 }

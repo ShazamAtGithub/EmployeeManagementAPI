@@ -62,7 +62,20 @@ GO
 CREATE PROCEDURE [dbo].[sp_GetAllEmployees]
 AS
 BEGIN
-    SELECT * FROM Employees ORDER BY CreatedAt DESC;
+    -- Return only the fields required by the admin dashboard to avoid transferring
+    -- large binary data (ProfileImage) and sensitive fields (Password).
+    SELECT
+        EmployeeID,
+        Name,
+        Designation,
+        Address,
+        Department,
+        JoiningDate,
+        Skillset,
+        Username,
+        Status
+    FROM Employees
+    ORDER BY CreatedAt DESC;
 END
 
 GO

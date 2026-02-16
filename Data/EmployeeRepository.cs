@@ -107,7 +107,21 @@ namespace EmployeeManagementAPI.Data
                     {
                         while (await reader.ReadAsync())
                         {
-                            employees.Add(MapEmployeeFromReader(reader));
+
+                            var employee = new Employee
+                            {
+                                EmployeeID = reader.GetInt32(reader.GetOrdinal("EmployeeID")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                Designation = reader.IsDBNull(reader.GetOrdinal("Designation")) ? null : reader.GetString(reader.GetOrdinal("Designation")),
+                                Address = reader.IsDBNull(reader.GetOrdinal("Address")) ? null : reader.GetString(reader.GetOrdinal("Address")),
+                                Department = reader.IsDBNull(reader.GetOrdinal("Department")) ? null : reader.GetString(reader.GetOrdinal("Department")),
+                                JoiningDate = reader.IsDBNull(reader.GetOrdinal("JoiningDate")) ? null : reader.GetDateTime(reader.GetOrdinal("JoiningDate")),
+                                Skillset = reader.IsDBNull(reader.GetOrdinal("Skillset")) ? null : reader.GetString(reader.GetOrdinal("Skillset")),
+                                Username = reader.GetString(reader.GetOrdinal("Username")),
+                                Status = reader.IsDBNull(reader.GetOrdinal("Status")) ? null : reader.GetString(reader.GetOrdinal("Status"))
+                            };
+
+                            employees.Add(employee);
                         }
                     }
                 }

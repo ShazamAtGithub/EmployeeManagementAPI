@@ -22,7 +22,24 @@ namespace EmployeeManagementAPI.Controllers
         public async Task<IActionResult> GetAllEmployees()
         {
             var employees = await _repository.GetAllEmployees();
-            return Ok(employees);
+
+            // Map to a lightweight DTO to avoid transferring large binary data (ProfileImage)
+            // and sensitive fields like Password. This prevents loading all images into memory
+            // when the admin requests the list.
+            var summaries = employees.Select(e => new EmployeeSummaryDto
+            {
+                EmployeeID = e.EmployeeID,
+                Name = e.Name,
+                Designation = e.Designation,
+                Address = e.Address,
+                Department = e.Department,
+                JoiningDate = e.JoiningDate,
+                Skillset = e.Skillset,
+                Username = e.Username,
+                Status = e.Status
+            }).ToList();
+
+            return Ok(summaries);
         }
 
         [HttpPut("employees/{id}/status")]
