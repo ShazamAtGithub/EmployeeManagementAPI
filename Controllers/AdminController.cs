@@ -2,11 +2,13 @@
 using EmployeeManagementAPI.DTOs;
 using EmployeeManagementAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EmployeeManagementAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {
         private readonly EmployeeRepository _repository;

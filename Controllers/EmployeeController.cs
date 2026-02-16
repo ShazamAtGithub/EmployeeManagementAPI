@@ -3,6 +3,8 @@ using EmployeeManagementAPI.Data;
 using EmployeeManagementAPI.Models;
 using EmployeeManagementAPI.DTOs;
 using EmployeeManagementAPI.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace EmployeeManagementAPI.Controllers
 {
@@ -12,14 +14,17 @@ namespace EmployeeManagementAPI.Controllers
     {
         private readonly EmployeeRepository _repository;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IJwtService _jwtService;
 
-        public EmployeeController(EmployeeRepository repository, IPasswordHasher passwordHasher)
+        public EmployeeController(EmployeeRepository repository, IPasswordHasher passwordHasher, IJwtService jwtService)
         {
             _repository = repository;
             _passwordHasher = passwordHasher;
+            _jwtService = jwtService;
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -42,8 +47,16 @@ namespace EmployeeManagementAPI.Controllers
                 return Unauthorized(new { message = "Account is inactive. Please contact Admin." });
             }
 
+            // Generate JWT token
+            var token = _jwtService.GenerateToken(
+                employee.EmployeeID,
+                employee.Username,
+                employee.Role
+            );
+
             return Ok(new LoginResponse
             {
+                Token = token,
                 EmployeeID = employee.EmployeeID,
                 Name = employee.Name,
                 Username = employee.Username,
@@ -53,6 +66,7 @@ namespace EmployeeManagementAPI.Controllers
         }
 
         [HttpPost("register")]
+        [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterEmployeeRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -102,8 +116,18 @@ namespace EmployeeManagementAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetEmployee(int id)
         {
+            // Get logged-in user ID from JWT token
+            var loggedInUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var loggedInUserRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (loggedInUserRole != "Admin" && loggedInUserId != id)
+            {
+                return NotFound();
+            }
+
             var employee = await _repository.GetEmployeeById(id);
             if (employee == null)
             {
@@ -112,12 +136,17 @@ namespace EmployeeManagementAPI.Controllers
             return Ok(employee);
         }
 
-
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateEmployee(int id, [FromBody] UpdateEmployeeRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            var loggedInUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (loggedInUserId != id)
+            {
+                return Forbid();
+            }
             var targetEmployee = await _repository.GetEmployeeById(id);
             if (targetEmployee == null || targetEmployee.Role == "Admin") return NotFound();
             if (targetEmployee.Username != request.ModifiedBy)
@@ -143,9 +172,17 @@ namespace EmployeeManagementAPI.Controllers
 
 
         [HttpPut("{id}/image")]
+        [Authorize]
         public async Task<IActionResult> UpdateProfileImage(int id, [FromBody] UpdateProfileImageRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var loggedInUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+
+            if (loggedInUserId != id)
+            {
+                return Forbid();
+            }
 
             // Convert the Base64 string from the frontend back to a byte array
             byte[]? imageBytes = null;
@@ -172,6 +209,7 @@ namespace EmployeeManagementAPI.Controllers
         }
 
         [HttpGet("{id}/image")]
+        [Authorize]
         public async Task<IActionResult> GetProfileImage(int id)
         {
             var imageBytes = await _repository.GetProfileImage(id);
