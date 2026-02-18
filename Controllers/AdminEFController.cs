@@ -57,7 +57,7 @@ namespace EmployeeManagementAPI.Controllers
                 return BadRequest(new { message = "Action denied." });
 
             employee.Status = request.Status.Trim();
-            employee.ModifiedBy = string.IsNullOrWhiteSpace(request.ModifiedBy) ? "System" : request.ModifiedBy;
+            employee.ModifiedBy = User.Identity?.Name ?? "UnknownAdmin";
             employee.ModifiedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
