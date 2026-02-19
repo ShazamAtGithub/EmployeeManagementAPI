@@ -36,7 +36,8 @@ namespace EmployeeManagementAPI.Controllers
                 JoiningDate = e.JoiningDate,
                 Skillset = e.Skillset,
                 Username = e.Username,
-                Status = e.Status
+                Status = e.Status,
+                Role = e.Role
             }).ToList();
 
             return Ok(summaries);
