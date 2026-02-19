@@ -158,7 +158,8 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
             // Assert
             Assert.IsType<OkObjectResult>(result);
             var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Username == "johndoe");
-            Assert.NotNull(employee.ProfileImage);
+            Assert.NotNull(employee);
+            Assert.NotNull(employee!.ProfileImage);
             Assert.Equal(imageBytes, employee.ProfileImage);
         }
         [Fact]
@@ -185,7 +186,8 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
             // Assert
             Assert.IsType<OkObjectResult>(result);
             var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Username == "janedoe");
-            Assert.NotNull(employee.ProfileImage);
+            Assert.NotNull(employee);
+            Assert.NotNull(employee!.ProfileImage);
             Assert.Equal(exact2MBBytes.Length, employee.ProfileImage.Length);
         }
 
