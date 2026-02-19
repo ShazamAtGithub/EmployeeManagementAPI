@@ -73,7 +73,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
                 Password = "hashedpass",
                 Status = "Active",
                 Role = "Employee",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(existingEmployee);
             await _context.SaveChangesAsync();

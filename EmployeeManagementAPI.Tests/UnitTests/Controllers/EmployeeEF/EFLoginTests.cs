@@ -40,7 +40,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
                 Password = "hashed_password",
                 Status = "Active",
                 Role = "Employee",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
@@ -83,7 +83,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
                 Password = "hashed_password",
                 Status = "Active",
                 Role = "Employee",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
@@ -137,7 +137,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
                 Password = "hashed_password",
                 Status = "Active",
                 Role = "Employee",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
@@ -171,7 +171,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
                 Password = "hashed_password",
                 Status = "Inactive",
                 Role = "Employee",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();

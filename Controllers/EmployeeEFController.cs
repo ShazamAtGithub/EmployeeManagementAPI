@@ -106,7 +106,7 @@ namespace EmployeeManagementAPI.Controllers
                     Status = "Active",
                     Role = "Employee",
                     CreatedBy = request.CreatedBy ?? "Self",
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 _context.Employees.Add(employee);
@@ -163,7 +163,7 @@ namespace EmployeeManagementAPI.Controllers
             employee.JoiningDate = request.JoiningDate;
             employee.Skillset = request.Skillset;
             employee.ModifiedBy = request.ModifiedBy;
-            employee.ModifiedAt = DateTime.Now;
+            employee.ModifiedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
@@ -203,7 +203,7 @@ namespace EmployeeManagementAPI.Controllers
 
             employee.ProfileImage = imageBytes;
             employee.ModifiedBy = string.IsNullOrWhiteSpace(request.ModifiedBy) ? "System" : request.ModifiedBy;
-            employee.ModifiedAt = DateTime.Now;
+            employee.ModifiedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 

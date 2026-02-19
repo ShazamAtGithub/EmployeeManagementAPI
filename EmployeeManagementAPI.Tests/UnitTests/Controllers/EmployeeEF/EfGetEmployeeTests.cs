@@ -41,7 +41,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
                 Password = "hashed_password",
                 Status = "Active",
                 Role = "Employee",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
@@ -68,7 +68,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
                 Password = "hashed_password",
                 Status = "Active",
                 Role = "Employee",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             var employee2 = new Employee
             {
@@ -77,7 +77,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
                 Password = "hashed_password",
                 Status = "Active",
                 Role = "Employee",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.AddRange(employee1, employee2);
             await _context.SaveChangesAsync();
@@ -102,7 +102,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
                 Password = "hashed_password",
                 Status = "Active",
                 Role = "Admin",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             var employee = new Employee
             {
@@ -111,7 +111,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
                 Password = "hashed_password",
                 Status = "Active",
                 Role = "Employee",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.AddRange(admin, employee);
             await _context.SaveChangesAsync();
@@ -151,7 +151,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
                 Password = "hashed_password",
                 Status = "Active",
                 Role = "Admin",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(admin);
             await _context.SaveChangesAsync();

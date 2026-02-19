@@ -59,7 +59,7 @@ namespace EmployeeManagementAPI.Controllers
 
             employee.Status = request.Status.Trim();
             employee.ModifiedBy = User.Identity?.Name ?? "UnknownAdmin";
-            employee.ModifiedAt = DateTime.Now;
+            employee.ModifiedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
@@ -88,7 +88,7 @@ namespace EmployeeManagementAPI.Controllers
             employee.JoiningDate = request.JoiningDate;
             employee.Skillset = request.Skillset;
             employee.ModifiedBy = request.ModifiedBy;
-            employee.ModifiedAt = DateTime.Now;
+            employee.ModifiedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
