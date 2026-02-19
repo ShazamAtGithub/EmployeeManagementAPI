@@ -48,7 +48,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
                 Role = "Employee",
                 Designation = "Junior Dev",
                 Department = "IT",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
@@ -70,7 +70,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
             var okResult = Assert.IsType<OkObjectResult>(result);
 
             var updatedEmployee = await _context.Employees.FindAsync(employee.EmployeeID);
-            Assert.Equal("New Name", updatedEmployee.Name);
+            Assert.Equal("New Name", updatedEmployee!.Name);
             Assert.Equal("Senior Dev", updatedEmployee.Designation);
             Assert.Equal("Engineering", updatedEmployee.Department);
             Assert.Equal("123 Main St", updatedEmployee.Address);
@@ -91,7 +91,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
                 Password = originalPassword,
                 Status = "Active",
                 Role = "Employee",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
@@ -109,9 +109,9 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
             var okResult = Assert.IsType<OkObjectResult>(result);
 
             var updatedEmployee = await _context.Employees.FindAsync(employee.EmployeeID);
-            Assert.Equal(originalPassword, updatedEmployee.Password); // unchanged
-            Assert.Equal("Active", updatedEmployee.Status); // unchanged
-            Assert.Equal("Employee", updatedEmployee.Role); // unchanged
+            Assert.Equal(originalPassword, updatedEmployee!.Password); 
+            Assert.Equal("Active", updatedEmployee.Status); 
+            Assert.Equal("Employee", updatedEmployee.Role); 
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
                 Password = _hasher.Hash("Password123"),
                 Status = "Active",
                 Role = "Admin",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(admin);
             await _context.SaveChangesAsync();
@@ -163,7 +163,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
 
             // Verify name was NOT changed
             var unchangedAdmin = await _context.Employees.FindAsync(admin.EmployeeID);
-            Assert.Equal("Admin User", unchangedAdmin.Name);
+            Assert.Equal("Admin User", unchangedAdmin!.Name);
         }
 
         [Fact]
@@ -178,7 +178,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
                 Status = "Active",
                 Role = "Employee",
                 JoiningDate = new DateTime(2020, 1, 1),
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
@@ -198,7 +198,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
             var okResult = Assert.IsType<OkObjectResult>(result);
 
             var updatedEmployee = await _context.Employees.FindAsync(employee.EmployeeID);
-            Assert.Equal(newJoiningDate, updatedEmployee.JoiningDate);
+            Assert.Equal(newJoiningDate, updatedEmployee!.JoiningDate);
         }
 
         [Fact]
@@ -214,7 +214,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
                 Role = "Employee",
                 Designation = "Developer",
                 Address = "Old Address",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
@@ -222,8 +222,8 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
             var updateRequest = new UpdateEmployeeRequest
             {
                 Name = "Test User",
-                Designation = null, // Clear designation
-                Address = null,     // Clear address
+                Designation = null, 
+                Address = null,     
                 ModifiedBy = "admin"
             };
 
@@ -234,7 +234,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
             var okResult = Assert.IsType<OkObjectResult>(result);
 
             var updatedEmployee = await _context.Employees.FindAsync(employee.EmployeeID);
-            Assert.Null(updatedEmployee.Designation);
+            Assert.Null(updatedEmployee!.Designation);
             Assert.Null(updatedEmployee.Address);
         }
 
@@ -249,7 +249,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
                 Password = _hasher.Hash("Password123"),
                 Status = "Active",
                 Role = "Employee",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
@@ -272,7 +272,7 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.AdminEF
             var okResult = Assert.IsType<OkObjectResult>(result);
 
             var updatedEmployee = await _context.Employees.FindAsync(employee.EmployeeID);
-            Assert.Equal("New Name", updatedEmployee.Name);
+            Assert.Equal("New Name", updatedEmployee!.Name);
             Assert.Equal("Tech Lead", updatedEmployee.Designation);
             Assert.Equal("456 Oak St", updatedEmployee.Address);
             Assert.Equal("Technology", updatedEmployee.Department);

@@ -10,7 +10,7 @@ namespace EmployeeManagementAPI.Data
 
         public EmployeeRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _connectionString = configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
         }
 
         // Fetches the user and hashed password

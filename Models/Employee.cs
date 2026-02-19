@@ -7,7 +7,7 @@ namespace EmployeeManagementAPI.Models
         public int EmployeeID { get; set; }
 
         [Required, StringLength(100)]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [StringLength(100)]
         public string? Designation { get; set; }
@@ -26,16 +26,16 @@ namespace EmployeeManagementAPI.Models
         public byte[]? ProfileImage { get; set; }
 
         [Required, StringLength(50, MinimumLength = 3)]
-        public string Username { get; set; }
+        public string Username { get; set; } = string.Empty;
 
         [Required, MinLength(8), DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         [Required, StringLength(50)]
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty;
 
         [Required, StringLength(50)]
-        public string Role { get; set; }
+        public string Role { get; set; } = string.Empty;
 
         [StringLength(50)]
         public string? CreatedBy { get; set; }
