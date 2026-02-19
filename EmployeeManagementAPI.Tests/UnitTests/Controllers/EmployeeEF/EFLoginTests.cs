@@ -1,12 +1,13 @@
-﻿using Xunit;
-using Moq;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using EmployeeManagementAPI.Controllers;
+﻿using EmployeeManagementAPI.Controllers;
 using EmployeeManagementAPI.Data;
-using EmployeeManagementAPI.Services;
 using EmployeeManagementAPI.DTOs;
 using EmployeeManagementAPI.Models;
+using EmployeeManagementAPI.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Moq;
+using Xunit;
 
 namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
 {
@@ -16,14 +17,18 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
         private readonly Mock<IPasswordHasher> _mockHasher;
         private readonly Mock<IJwtService> _mockJwtService;
         private readonly EmployeeEFController _controller;
+        private readonly SqliteConnection _connection;
 
         public LoginTests()
         {
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-                .Options;
+            _connection = new SqliteConnection("DataSource=:memory:");
+            _connection.Open();
 
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseSqlite(_connection)
+                .Options;
             _context = new AppDbContext(options);
+            _context.Database.EnsureCreated();
             _mockHasher = new Mock<IPasswordHasher>();
             _mockJwtService = new Mock<IJwtService>();
             _controller = new EmployeeEFController(_context, _mockHasher.Object, _mockJwtService.Object);
@@ -197,6 +202,9 @@ namespace EmployeeManagementAPI.Tests.UnitTests.Controllers.EmployeeEF
         {
             _context.Database.EnsureDeleted();
             _context.Dispose();
+
+            _connection?.Close();
+            _connection?.Dispose();
         }
     }
 }
