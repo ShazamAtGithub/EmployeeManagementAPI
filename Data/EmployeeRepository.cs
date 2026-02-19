@@ -21,7 +21,7 @@ namespace EmployeeManagementAPI.Data
                 using (SqlCommand cmd = new SqlCommand("sp_GetEmployeeByUsername", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Username", username);
+                    cmd.Parameters.AddWithValue("@Username", username.ToLower());
 
                     await conn.OpenAsync();
                     using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
@@ -57,7 +57,7 @@ namespace EmployeeManagementAPI.Data
                     cmd.Parameters.AddWithValue("@Department", employee.Department ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@JoiningDate", employee.JoiningDate ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Skillset", employee.Skillset ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Username", employee.Username);
+                    cmd.Parameters.AddWithValue("@Username", employee.Username.ToLower());
                     // Receives the HASHED password from the Controller
                     cmd.Parameters.AddWithValue("@Password", employee.Password);
                     cmd.Parameters.AddWithValue("@CreatedBy", employee.CreatedBy ?? "Self");

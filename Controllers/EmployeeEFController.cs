@@ -32,7 +32,7 @@ namespace EmployeeManagementAPI.Controllers
 
             var employee = await _context.Employees
                 .AsNoTracking()
-                .FirstOrDefaultAsync(e => e.Username == request.Username);
+                .FirstOrDefaultAsync(e => e.Username.ToLower() == request.Username.ToLower());
 
             if (employee == null)
                 return Unauthorized(new { message = "Invalid credentials" });
@@ -68,9 +68,9 @@ namespace EmployeeManagementAPI.Controllers
 
             try
             {
-                // Check for duplicate username
+                // Check for duplicate username (case insensitive)
                 bool usernameExists = await _context.Employees
-                    .AnyAsync(e => e.Username == request.Username);
+                    .AnyAsync(e => e.Username.ToLower() == request.Username.ToLower());
 
                 if (usernameExists)
                     return BadRequest(new { message = "Username already exists." });
@@ -101,7 +101,7 @@ namespace EmployeeManagementAPI.Controllers
                     JoiningDate = request.JoiningDate,
                     Skillset = request.Skillset,
                     ProfileImage = imageBytes,
-                    Username = request.Username,
+                    Username = request.Username.ToLower(),
                     Password = _passwordHasher.Hash(request.Password),
                     Status = "Active",
                     Role = "Employee",
